@@ -31,11 +31,14 @@ mkdir -p ${RPM_BUILD_ROOT}/etc/sshguard
 mkdir -p ${RPM_BUILD_ROOT}/etc/sysconfig
 mkdir -p ${RPM_BUILD_ROOT}/usr/lib/sshguard
 mkdir -p ${RPM_BUILD_ROOT}/usr/lib/systemd/system-preset
+mkdir -p ${RPM_BUILD_ROOT}/usr/share/doc/sshguard/examples
 mkdir -p ${RPM_BUILD_ROOT}/lib/systemd/system
 cp -a ${RPM_BUILD_ROOT}/../../SOURCES/etc/sshguard/whitelist ${RPM_BUILD_ROOT}/etc/sshguard/whitelist
 cp -a ${RPM_BUILD_ROOT}/../../SOURCES/etc/sysconfig/sshguard ${RPM_BUILD_ROOT}/etc/sysconfig/sshguard
 cp -a ${RPM_BUILD_ROOT}/../../SOURCES/usr/lib/sshguard/firewall ${RPM_BUILD_ROOT}/usr/lib/sshguard/firewall
 cp -a ${RPM_BUILD_ROOT}/../../SOURCES/usr/lib/systemd/system-preset/00-sshguard.preset ${RPM_BUILD_ROOT}/usr/lib/systemd/system-preset/00-sshguard.preset
+cp -a ${RPM_BUILD_ROOT}/../../SOURCES/usr/share/doc/sshguard/examples/whitelistfile.example ${RPM_BUILD_ROOT}/usr/share/doc/sshguard/examples/whitelistfile.example
+cp -a ${RPM_BUILD_ROOT}/../../SOURCES/usr/share/doc/sshguard/copyright ${RPM_BUILD_ROOT}/usr/share/doc/sshguard/copyright
 cp -a ${RPM_BUILD_ROOT}/../../SOURCES/lib/systemd/system/sshguard.service ${RPM_BUILD_ROOT}/lib/systemd/system/sshguard.service
 
 %files
@@ -50,6 +53,8 @@ cp -a ${RPM_BUILD_ROOT}/../../SOURCES/lib/systemd/system/sshguard.service ${RPM_
 /usr/libexec/sshg-logtail
 /usr/libexec/sshg-parser
 /usr/sbin/sshguard
+/usr/share/doc/sshguard/examples/whitelistfile.example
+/usr/share/doc/sshguard/copyright
 /usr/share/man/man8/sshguard.8.gz
 
 %post

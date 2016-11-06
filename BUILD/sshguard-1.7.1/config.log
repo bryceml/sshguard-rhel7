@@ -565,7 +565,7 @@ configure:5009: $? = 0
 configure:5026: result: none required
 configure:5034: checking for library containing pthread_create
 configure:5065: gcc -std=gnu99 -o conftest -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches   -m64 -mtune=generic  -Wl,-z,relro  conftest.c  >&5
-/tmp/ccHnvhvg.o: In function `main':
+/tmp/ccMH0wlu.o: In function `main':
 /root/rpmbuild/BUILD/sshguard-1.7.1/conftest.c:38: undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
 configure:5065: $? = 1
