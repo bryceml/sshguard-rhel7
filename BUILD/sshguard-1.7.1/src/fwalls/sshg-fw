@@ -1,0 +1,70 @@
+#!/bin/sh
+# sshg-fw -- control firewall backends
+# This file is part of SSHGuard.
+
+# DEVELOPER NOTE: sshg-fw is built from sshg-fw.in and the backend script
+# only when the 'configure' script is run. If you change either source files,
+# you should re-run 'configure'.
+
+run_iptables() {
+    cmd=iptables
+    if [ "6" = "$2" ]; then
+        cmd=ip6tables
+    fi
+
+    # Check if iptables supports the '-w' flag.
+    if $cmd -w -V >/dev/null 2>&1; then
+        $cmd -w $1
+    else
+        $cmd $1
+    fi
+}
+
+fw_init() {
+    run_iptables "-L -n"
+}
+
+fw_block() {
+    run_iptables "-I sshguard -s $1 -j DROP" $2
+}
+
+fw_release() {
+    run_iptables "-D sshguard -s $1 -j DROP" $2
+}
+
+fw_flush() {
+    run_iptables "-F sshguard" 4
+    run_iptables "-F sshguard" 6
+}
+
+fw_fin() {
+    :
+}
+
+fw_init
+if [ $? -ne 0 ]; then
+    echo "Could not initialize firewall" >&2
+    exit 1
+fi
+
+cleanup() {
+    trap "" EXIT
+    fw_fin
+}
+
+trap cleanup EXIT INT
+
+while read cmd address addrtype; do
+    case $cmd in
+        block)
+            fw_block $address $addrtype;;
+        release)
+            fw_release $address $addrtype;;
+        flush)
+            fw_flush;;
+        noop)
+            ;;
+        *)
+            break;;
+    esac
+done

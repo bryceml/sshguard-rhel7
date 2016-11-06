@@ -1,0 +1,13 @@
+# list of log files to scan delimited by space and -l parameter
+# For more information please see
+# http://www.sshguard.net/docs/setup/getlogs/log-sucker/
+# Example
+#LOGFILES="-l /var/log/foo.log -l /var/log/bar.log"
+LOGFILES="-l /var/log/secure"
+
+# Whitelist configuration file
+WHITELIST="/etc/sshguard/whitelist"
+
+# Other options
+ARGS="-a 40 -p 420 -s 1200"
+

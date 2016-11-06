@@ -1,0 +1,79 @@
+#!/bin/sh
+
+OS=$(uname)
+
+if [ "$OS" = "Linux" ]; then
+	#
+	# Function that enables firewall
+	#
+	do_enable_firewall()
+	{
+		# creating sshguard chain
+		iptables -w -N sshguard 2> /dev/null
+		ip6tables -w -N sshguard 2> /dev/null
+		# block traffic from abusers
+		iptables -w -I INPUT -j sshguard 2> /dev/null
+		ip6tables -w -I INPUT -j sshguard 2> /dev/null
+	}
+	#
+	# Function that disables firewall
+	#
+	do_disable_firewall()
+	{
+		# flushes list of abusers
+		iptables -F sshguard 2> /dev/null
+		ip6tables -F sshguard 2> /dev/null
+		# removes sshguard firewall rules
+		iptables -D INPUT -j sshguard 2> /dev/null
+		ip6tables -D INPUT -j sshguard 2> /dev/null
+		# removing sshguard chain
+		iptables -X sshguard 2> /dev/null
+		ip6tables -X sshguard 2> /dev/null
+	}
+else
+	# KfreeBSD code
+	#
+	# Function that enables firewall
+	#
+	do_enable_firewall()
+	{
+		# create sshguard firewall rules
+		PF_AVAILABLE=$(lsmod |grep pf.ko |awk {'print $5'})
+		if [ "$PF_AVAILABLE" != "pf.ko" ]; then
+			kldload pf
+		fi
+		pfctl -e 2> /dev/null # Enable PF
+		# Loading sshguard table and rules
+		pfctl -f /etc/sshguard/sshguard.conf 2> /dev/null
+	}
+	#
+	# Function that disables firewall
+	#
+	do_disable_firewall()
+	{
+		# flushes list of abusers
+		pfctl -Tflush -t sshguard 2> /dev/null
+		# removes sshguard firewall rules
+		pfctl -Tdel -t sshguard 2> /dev/null
+		# removing sshguard table
+		pfctl -Tkill -t sshguard 2> /dev/null
+	}
+fi
+
+case "$1" in
+    enable)
+	do_enable_firewall
+	;;
+    disable)
+	do_disable_firewall
+	;;
+    restart)
+	do_disable_firewall
+	do_enable_firewall
+	;;
+    *)
+	exit 1
+	;;
+esac
+
+exit 0

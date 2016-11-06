@@ -1,0 +1,37 @@
+#!/bin/sh
+# sshg-fw -- control firewall backends
+# This file is part of SSHGuard.
+
+# DEVELOPER NOTE: sshg-fw is built from sshg-fw.in and the backend script
+# only when the 'configure' script is run. If you change either source files,
+# you should re-run 'configure'.
+
+@sshg_fw_subr@
+
+fw_init
+if [ $? -ne 0 ]; then
+    echo "Could not initialize firewall" >&2
+    exit 1
+fi
+
+cleanup() {
+    trap "" EXIT
+    fw_fin
+}
+
+trap cleanup EXIT INT
+
+while read cmd address addrtype; do
+    case $cmd in
+        block)
+            fw_block $address $addrtype;;
+        release)
+            fw_release $address $addrtype;;
+        flush)
+            fw_flush;;
+        noop)
+            ;;
+        *)
+            break;;
+    esac
+done

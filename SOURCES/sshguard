@@ -1,0 +1,116 @@
+#!/bin/bash
+#
+# sshguard      Start up the sshguard daemon
+#
+# chkconfig:    2345 56 24
+# description:  SshGuard daemon
+#
+# processname:  sshguard
+# pidfile: /var/run/sshguard.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/sshguard ] && . /etc/sysconfig/sshguard
+
+
+RETVAL=0
+
+exec=/usr/sbin/sshguard
+prog=sshguard
+lockfile=/var/lock/subsys/$prog
+pidfile=/var/run/$prog.pid
+args="$(for LOG in "${SSHGUARD_LISTEN_LOGS[@]}"; do echo -l $LOG; done) $(for IP in "${SSHGUARD_WHITELIST[@]}"; do echo -w $IP; done) $SSHGUARD_OPTIONS"
+
+startip () {
+
+echo "in startip"
+
+exec >> /dev/null
+
+iptables -N sshguard
+ip6tables -N sshguard
+
+iptables -A INPUT -j sshguard
+ip6tables -A INPUT -j sshguard
+
+service iptables start
+service ip6tables start 
+}
+
+stopip () {
+echo "in stopip"
+exec >> /dev/null
+service iptables stop
+service ip6tables stop
+
+iptables -F
+ip6tables -F
+
+}
+
+start()
+{
+    echo -n $"Starting $prog: "
+    [ -x $exec ] || {
+        failure $"$base startup"
+        echo
+        echo "Cannot find executable: $exec" >&2
+        exit 5
+    }
+
+    [ -r ${pidfile} ] && {
+        pid=$(cat ${pidfile})
+        checkpid $pid && {
+            failure $"$base startup"
+            echo
+            echo "sshguard already started: PID=$pid" >&2
+            exit -1
+        }
+    }
+
+    $exec $args &>/dev/null &
+    echo $! > ${pidfile}
+    success $"$base startup"
+    echo 
+    return 0
+}
+
+stop()
+{
+    echo -n $"Stopping $prog: "
+    killproc -p ${pidfile} $prog
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    stop
+    stopip
+    startip
+    start
+}
+
+case "$1" in
+    start)
+        startip
+        start
+        ;;
+    stop)
+        stop
+	stopip
+        ;;
+    restart)
+        restart
+        ;;
+    status)
+        status -p ${pidfile} ${prog}
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        RETVAL=2
+esac
+exit $RETVAL

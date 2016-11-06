@@ -1,0 +1,19 @@
+#!/bin/sh
+# sshg-logtail -- poll from the ends of log files using `tail`
+# This file is part of SSHGuard.
+
+tailF="tail -F -n 0 $@"
+tailf="tail -f -n 0 $@"
+
+fallback() {
+    eval $tailF 2>/dev/null || exec $tailf
+}
+
+case `uname` in
+    Darwin|FreeBSD|Linux|NetBSD)
+        exec $tailF;;
+    OpenBSD)
+        exec $tailf;;
+    *)
+        fallback;;
+esac
